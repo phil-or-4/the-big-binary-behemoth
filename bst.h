@@ -19,19 +19,21 @@ violation.
 using namespace std;
 
 template <typename T>
-class bst {
+class bst
+{
 
-public:
-	struct bst_node {
-		T      val;
-		int count;		//store the number of nodes in subtree including the root
-		int lcount;		//store the number of nodes in the left
-		int rcount;		//store the number of nodes in the right
+  public:
+	struct bst_node
+	{
+		T val;
+		int count;  //store the number of nodes in subtree including the root
+		int lcount; //store the number of nodes in the left
+		int rcount; //store the number of nodes in the right
 		bst_node *left;
 		bst_node *right;
 
-		bst_node(const T & _val = T{}, bst_node * l = nullptr, bst_node *r = nullptr, int lnum = 0, int rnum = 0, int tnum = 0)
-			: val{ _val }, left{ l }, right{ r }, lcount{ lnum }, rcount{ rnum }, count{ tnum }
+		bst_node(const T &_val = T{}, bst_node *l = nullptr, bst_node *r = nullptr, int lnum = 0, int rnum = 0, int tnum = 0)
+			: val{_val}, left{l}, right{r}, lcount{lnum}, rcount{rnum}, count{tnum}
 		{
 		}
 	};
@@ -42,31 +44,33 @@ public:
 		root = nullptr;
 	}
 
-private:
+  private:
 	// helper function which recursively deallocates nodes
-	//   in a tree.
+	// in a tree.
 	static void delete_nodes(bst_node *r)
 	{
-		if (r == nullptr) return;
+		if (r == nullptr)
+			return;
 		delete_nodes(r->left);
 		delete_nodes(r->right);
 		delete r;
 	}
 
-public:
+  public:
 	// destructor
 	~bst()
 	{
 		delete_nodes(root);
 	}
 
-private:
-
-	//these are used for the size balancing
-	static int max(int num1, int num2) {
+  private:
+	// these are used for the size balancing
+	static int max(int num1, int num2)
+	{
 		return (num1 > num2) ? num1 : num2;
 	}
-	static int min(int num1, int num2) {
+	static int min(int num1, int num2)
+	{
 		return (num1 < num2) ? num1 : num2;
 	}
 	/**
@@ -78,12 +82,12 @@ private:
 	*
 	* notes:     if x is already in tree, no modifications are made.
 	*/
-	static bst_node * _insert(bst_node *r, T & x, bool &success, bst_node** violator)
+	static bst_node *_insert(bst_node *r, T &x, bool &success, bst_node **violator)
 	{
 		if (r == nullptr)
 		{
 			success = true;
-			return new bst_node(x, nullptr, nullptr, 0, 0, 1);		//make the count 1 but r and l 0
+			return new bst_node(x, nullptr, nullptr, 0, 0, 1); //make the count 1 but r and l 0
 		}
 		if (r->val == x)
 		{
@@ -93,22 +97,26 @@ private:
 		if (x < r->val)
 		{
 			r->left = _insert(r->left, x, success, violator);
-			if (success) r->lcount += 1;				//if the insert worked then count++
-			r->count = 1 + r->lcount + r->rcount;		//recalculate total
-			if (max(r->lcount, r->rcount) > 2 * min(r->lcount, r->rcount) + 1) *violator = r; //check the size balance condition on this node
+			if (success)
+				r->lcount += 1;					  //if the insert worked then count++
+			r->count = 1 + r->lcount + r->rcount; //recalculate total
+			if (max(r->lcount, r->rcount) > 2 * min(r->lcount, r->rcount) + 1)
+				*violator = r; //check the size balance condition on this node
 			return r;
 		}
 		else
 		{
 			r->right = _insert(r->right, x, success, violator);
-			if (success) r->rcount += 1;				//if the insert worked then count++
-			r->count = 1 + r->lcount + r->rcount;		//recalculate total
-			if (max(r->lcount, r->rcount) > 2 * min(r->lcount, r->rcount) + 1) *violator = r;//check the size balance condition on this node
+			if (success)
+				r->rcount += 1;					  //if the insert worked then count++
+			r->count = 1 + r->lcount + r->rcount; //recalculate total
+			if (max(r->lcount, r->rcount) > 2 * min(r->lcount, r->rcount) + 1)
+				*violator = r; //check the size balance condition on this node
 			return r;
 		}
 	}
 
-public:
+  public:
 	/**
 	* function:  insert
 	* desc:      inserts x into BST given by t.  Note that
@@ -122,10 +130,11 @@ public:
 	//TODO add & back to insert
 	bool insert(T &x)
 	{
-		bst_node* violator = nullptr;
+		bst_node *violator = nullptr;
 		bool success;
 		root = _insert(root, x, success, &violator);
-		if (violator != nullptr) bst_balance(violator);
+		if (violator != nullptr)
+			bst_balance(violator);
 		return success;
 	}
 
@@ -136,58 +145,64 @@ public:
 				this event. We must retain a 2/3 to 1/3 balance to ensure we get good runtimes
 				for insert, lookup, remove, etc...
 	*/
-	static void bst_balance(bst_node *(&r)) {
-		vector<bst_node*> vec = vector<bst_node*>();
-		populate_balance_vector(vec, r);				//store all the values to rebalance in a vector
-		_my_from_vec(vec, 0, vec.size() - 1, r);			//now use that vector to rebalance the nodes
+	static void bst_balance(bst_node *(&r))
+	{
+		vector<bst_node *> vec = vector<bst_node *>();
+		populate_balance_vector(vec, r);		 //store all the values to rebalance in a vector
+		_my_from_vec(vec, 0, vec.size() - 1, r); //now use that vector to rebalance the nodes
 	}
 
-private:
+  private:
 	/*
 	* Recursive  helper function _my_from_vec, used by
 	* balance_bst. The function must return a sub-tree that is
 	* perfectly balanced, given a sorted array of bst_node*'s.
 	*/
-	static bst_node* _my_from_vec(const std::vector<bst_node*> &a, int low, int hi, bst_node*(&root))
+	static bst_node *_my_from_vec(const std::vector<bst_node *> &a, int low, int hi, bst_node *(&root))
 	{
 		int m;
 
-		if (hi < low) return nullptr;
+		if (hi < low)
+			return nullptr;
 		m = (low + hi) / 2;
-		root = a[m];		//set the root to point to the bst_node in the vec
+		root = a[m]; //set the root to point to the bst_node in the vec
 		root->count = 0;
 		root->lcount = 0;
 		root->rcount = 0;
 		root->left = _my_from_vec(a, low, m - 1, root->left);
 		root->right = _my_from_vec(a, m + 1, hi, root->right);
-		if (root->right != nullptr)	root->rcount += root->right->count;		//if there's a right node we have to tally it's count to rcount
-		if (root->left != nullptr) root->lcount += root->left->count;		//if there's a left node we have to tally it's count to lcount
-		root->count = 1 + root->rcount + root->lcount;						//recalculate total
+		if (root->right != nullptr)
+			root->rcount += root->right->count; 		//if there's a right node we have to tally it's count to rcount
+		if (root->left != nullptr)
+			root->lcount += root->left->count;		   	//if there's a left node we have to tally it's count to lcount
+		root->count = 1 + root->rcount + root->lcount; 	//recalculate total
 		return root;
 	}
 
 	//modified to return a node pointing to the root
-	static bst_node * from_sorted_vec(const std::vector<bst_node*> &a, int n)
+	static bst_node *from_sorted_vec(const std::vector<bst_node *> &a, int n)
 	{
 		return _from_vec(a, 0, n - 1);
 	}
 
 	//helper func for bst_balance, helps make a sorted array
-	static void populate_balance_vector(vector<bst_node*> &V, bst_node *(&r)) {
-		if (r == nullptr) return;
+	static void populate_balance_vector(vector<bst_node *> &V, bst_node *(&r))
+	{
+		if (r == nullptr)
+			return;
 		populate_balance_vector(V, r->left);
 		V.push_back(r);
 		populate_balance_vector(V, r->right);
 	}
 
-public:
+  public:
 	/**
 	* function:  contains()
 	* desc:      returns true or false depending on whether x is an
 	*            element of BST (calling object)
 	*
 	*/
-	bool contains(const T & x)
+	bool contains(const T &x)
 	{
 		bst_node *p = root;
 
@@ -207,10 +222,10 @@ public:
 	}
 
 	//TODO change to private
-private:
+  private:
 	// returns pointer to node containing
 	//   smallest value in tree rooted at r
-	static bst_node * _min_node(bst_node *r)
+	static bst_node *_min_node(bst_node *r)
 	{
 		if (r == nullptr)
 			return nullptr; // should never happen!
@@ -221,7 +236,7 @@ private:
 
 	// returns pointer to node containing
 	//   smallest value in tree rooted at r
-	static bst_node * _max_node(bst_node *r)
+	static bst_node *_max_node(bst_node *r)
 	{
 		if (r == nullptr)
 			return nullptr; // should never happen!
@@ -232,7 +247,7 @@ private:
 
 	// recursive helper function for node removal
 	//   returns root of resulting tree after removal.
-	static bst_node * _remove(bst_node *r, T & x, bool &success, bst_node** violator)
+	static bst_node *_remove(bst_node *r, T &x, bool &success, bst_node **violator)
 	{
 		bst_node *tmp;
 		bool sanity;
@@ -263,70 +278,77 @@ private:
 			r->right = _remove(r->right, r->val, sanity, violator);
 			if (!sanity)
 				std::cerr << "ERROR:  remove() failed to delete promoted value?\n";
-			r->rcount -= 1;							//modify the rcount b/c we remove a node in the right
-			r->count = 1 + r->rcount + r->lcount;	//recalculate total
-			if (max(r->lcount, r->rcount) > 2 * min(r->lcount, r->rcount) + 1) *violator = r;//check the size balance condition on this node
+			r->rcount -= 1;						  //modify the rcount b/c we remove a node in the right
+			r->count = 1 + r->rcount + r->lcount; //recalculate total
+			if (max(r->lcount, r->rcount) > 2 * min(r->lcount, r->rcount) + 1)
+				*violator = r; //check the size balance condition on this node
 			return r;
 		}
 		if (x < r->val)
 		{
 			r->left = _remove(r->left, x, success, violator);
-			if (success) r->lcount -= 1;			//modify the lcount b/c we remove a node in the left
-			r->count = 1 + r->rcount + r->lcount;	//recalculate total
+			if (success)
+				r->lcount -= 1;					  //modify the lcount b/c we remove a node in the left
+			r->count = 1 + r->rcount + r->lcount; //recalculate total
 		}
 		else
 		{
 			r->right = _remove(r->right, x, success, violator);
-			if (success) r->rcount -= 1;			//modify the rcount b/c we remove a node in the right
-			r->count = 1 + r->rcount + r->lcount;	//recalculate total
+			if (success)
+				r->rcount -= 1;					  //modify the rcount b/c we remove a node in the right
+			r->count = 1 + r->rcount + r->lcount; //recalculate total
 		}
-		if (max(r->lcount, r->rcount) > 2 * min(r->lcount, r->rcount) + 1) *violator = r;//check the size balance condition on this node
+		if (max(r->lcount, r->rcount) > 2 * min(r->lcount, r->rcount) + 1)
+			*violator = r; //check the size balance condition on this node
 		return r;
 	}
 
-public:
+  public:
 	//TODO put the ampersand back
 	bool remove(T &x)
 	{
-		bst_node* violator = nullptr;
+		bst_node *violator = nullptr;
 		bool success;
 		root = _remove(root, x, success, &violator);
-		if (violator != nullptr) bst_balance(violator); //balance
+		if (violator != nullptr)
+			bst_balance(violator); //balance
 		return success;
 	}
 
-private:
+  private:
 	// recursive helper function to compute size of tree rooted at r
 	static int _size(bst_node *r)
 	{
-		if (r == nullptr) return 0;
+		if (r == nullptr)
+			return 0;
 		return _size(r->left) + _size(r->right) + 1;
 	}
 
-public:
+  public:
 	int size()
 	{
 		return _size(root);
 	}
 
-private:
+  private:
 	static int _height(bst_node *r)
 	{
 		int l_h, r_h;
 
-		if (r == nullptr) return -1;
+		if (r == nullptr)
+			return -1;
 		l_h = _height(r->left);
 		r_h = _height(r->right);
 		return 1 + (l_h > r_h ? l_h : r_h);
 	}
 
-public:
+  public:
 	int height()
 	{
 		return _height(root);
 	}
 
-	bool min(T & answer)
+	bool min(T &answer)
 	{
 		if (root == nullptr)
 		{
@@ -354,14 +376,14 @@ public:
 	as a pointer
 	Runtime: O(n) where n is the number of elements in the tree.
 	*/
-	std::vector<T> * to_vector()
+	std::vector<T> *to_vector()
 	{
 		vector<T> *res = new vector<T>();
 		//check if there's no root
 		if (to_vector_helper(res, root) == nullptr)
 		{
 			delete res;		//bail and delete the memory we allocated for vec
-			return nullptr;	//YOU GET NOTHING, GOOD DAY SIR! -Willy Wonka
+			return nullptr; //YOU GET NOTHING, GOOD DAY SIR! -Willy Wonka
 		}
 		else
 		{
@@ -369,20 +391,21 @@ public:
 		}
 	}
 
-private:
+  private:
 	//helper function to to_vector, takes
-	vector<T> * to_vector_helper(vector<T> *V, bst_node *node)
+	vector<T> *to_vector_helper(vector<T> *V, bst_node *node)
 	{
 		//base case
-		if (node == nullptr) return nullptr;
+		if (node == nullptr)
+			return nullptr;
 
-		to_vector_helper(V, node->left);	//traverse to the left
-		V->push_back(node->val);				//insert the val in the vector
-		to_vector_helper(V, node->right);	//traverse to the right
+		to_vector_helper(V, node->left);  //traverse to the left
+		V->push_back(node->val);		  //insert the val in the vector
+		to_vector_helper(V, node->right); //traverse to the right
 		return V;
 	}
 
-public:
+  public:
 	/* TODO
 	* Function:  get_ith
 	* Description:  determines the ith smallest element in t and
@@ -397,36 +420,43 @@ public:
 	*/
 	bool get_ith(int i, T &x)
 	{
-		if (root == nullptr)return false;
+		if (root == nullptr)
+			return false;
 		//bounds check
-		if (i < 1 || i > root->count) return false;
+		if (i < 1 || i > root->count)
+			return false;
 		_get_ith(root, i, x);
 		return true;
 	}
 
-private:
+  private:
 	//helper function for get_ith
-	void _get_ith(bst_node* r, int i, T &x) {
+	void _get_ith(bst_node *r, int i, T &x)
+	{
 
-		if (r == nullptr) return;
+		if (r == nullptr)
+			return;
 
 		//the root is the ith smallest
-		if (r->lcount + 1 == i) {
+		if (r->lcount + 1 == i)
+		{
 			x = r->val;
 			return;
 		}
 		//the ith is in the right side
-		else if (r->lcount < i) {
+		else if (r->lcount < i)
+		{
 			//move the pointer to the right & reeval i to offset it with the count in left
 			_get_ith(r->right, i - (r->lcount + 1), x);
 		}
 		//iths is in left side
-		else {
+		else
+		{
 			_get_ith(r->left, i, x);
 		}
 	}
 
-public:
+  public:
 	bool get_ith_SLOW(int i, T &x)
 	{
 		int n = size();
@@ -446,27 +476,31 @@ public:
 	*
 	* Runtime:  O(h) where h is the tree height
 	*/
-	int num_geq(const T & x)
+	int num_geq(const T &x)
 	{
 		return _num_geq(root, x);
 	}
 
-private:
+  private:
 	//recursive helper for num_geq
-	int _num_geq(bst_node * r, const T & x) {
+	int _num_geq(bst_node *r, const T &x)
+	{
 
-		if (r == nullptr) return 0;										//return 0 if it's a null node
-		if (r->val >= x) return 1 + r->rcount + _num_geq(r->left, x);	//if the node is >= x then tally 1 + rcount then go left
-		else return _num_geq(r->right, x);								//if the node is < x go right
+		if (r == nullptr)
+			return 0; //return 0 if it's a null node
+		if (r->val >= x)
+			return 1 + r->rcount + _num_geq(r->left, x); //if the node is >= x then tally 1 + rcount then go left
+		else
+			return _num_geq(r->right, x); //if the node is < x go right
 	}
 
-public:
+  public:
 	/*
 	* function:     num_geq_SLOW
 	* description:  same functionality as num_geq but sloooow (linear time)
 	*
 	*/
-	int num_geq_SLOW(const T & x)
+	int num_geq_SLOW(const T &x)
 	{
 		return _num_geq_SLOW(root, x);
 	}
@@ -484,22 +518,26 @@ public:
 		return _num_leq(root, x);
 	}
 
-private:
+  private:
 	//recursive helper for num_leq
-	int _num_leq(bst_node * r, const T & x) {
+	int _num_leq(bst_node *r, const T &x)
+	{
 
-		if (r == nullptr) return 0;										//return 0 if it's a null node
-		if (r->val <= x) return 1 + r->lcount + _num_leq(r->right, x);	//if the node is <= x then tally 1 + lcount then go right
-		else return _num_leq(r->left, x);								//if the node is > x go left
+		if (r == nullptr)
+			return 0; //return 0 if it's a null node
+		if (r->val <= x)
+			return 1 + r->lcount + _num_leq(r->right, x); //if the node is <= x then tally 1 + lcount then go right
+		else
+			return _num_leq(r->left, x); //if the node is > x go left
 	}
 
-public:
+  public:
 	/*
 	* function:     num_leq_SLOW
 	* description:  same functionality as num_leq but sloooow (linear time)
 	*
 	*/
-	int num_leq_SLOW(const T & x)
+	int num_leq_SLOW(const T &x)
 	{
 		return _num_leq_SLOW(root, x);
 	}
@@ -512,52 +550,62 @@ public:
 	* Runtime:  O(h) where h is the tree height
 	*
 	**/
-	int num_range(const T & min, const T & max)
+	int num_range(const T &min, const T &max)
 	{
-		if (root == nullptr) return 0;			//if root is null drop it
-		if (min > max) return 0;				//if user is silly drop it
-		int numTotal = root->count;				//get the total number of nodes
-		int gTotal = num_gq(max);				//get the set to the right of the range
-		int lTotal = num_lq(min);				//get the set to the left of the range
-		return numTotal - (gTotal + lTotal);	//return the middle portion
+		if (root == nullptr)
+			return 0; //if root is null drop it
+		if (min > max)
+			return 0;						 //if user is silly drop it
+		int numTotal = root->count;			 //get the total number of nodes
+		int gTotal = num_gq(max);			 //get the set to the right of the range
+		int lTotal = num_lq(min);			 //get the set to the left of the range
+		return numTotal - (gTotal + lTotal); //return the middle portion
 	}
 
-private:
+  private:
 	//num_lq and num_gq get the numbers less then or greater then the min and max respectivaly
 	int num_lq(const T &x)
 	{
 		return _num_lq(root, x);
 	}
-	int _num_lq(bst_node * r, const T & x) {
+	int _num_lq(bst_node *r, const T &x)
+	{
 
-		if (r == nullptr) return 0;									//return 0 if it's a null node
-		if (r->val < x) return 1 + r->lcount + _num_lq(r->right, x);	//if the node is < x then tally 1 + lcount then go right
-		else return _num_lq(r->left, x);								//if the node is > x go left
+		if (r == nullptr)
+			return 0; //return 0 if it's a null node
+		if (r->val < x)
+			return 1 + r->lcount + _num_lq(r->right, x); //if the node is < x then tally 1 + lcount then go right
+		else
+			return _num_lq(r->left, x); //if the node is > x go left
 	}
 
-	int num_gq(const T & x)
+	int num_gq(const T &x)
 	{
 		return _num_gq(root, x);
 	}
-	int _num_gq(bst_node * r, const T & x) {
+	int _num_gq(bst_node *r, const T &x)
+	{
 
-		if (r == nullptr) return 0;									//return 0 if it's a null node
-		if (r->val > x) return 1 + r->rcount + _num_gq(r->left, x);	//if the node is > x then tally 1 + rcount then go left
-		else return _num_gq(r->right, x);							//if the node is < x go right
+		if (r == nullptr)
+			return 0; //return 0 if it's a null node
+		if (r->val > x)
+			return 1 + r->rcount + _num_gq(r->left, x); //if the node is > x then tally 1 + rcount then go left
+		else
+			return _num_gq(r->right, x); //if the node is < x go right
 	}
 
-public:
+  public:
 	/*
 	* function:     num_range_SLOW
 	* description:  same functionality as num_range but sloooow (linear time)
 	*
 	*/
-	int num_range_SLOW(const T & min, const T & max)
+	int num_range_SLOW(const T &min, const T &max)
 	{
 		return _num_range_SLOW(root, min, max);
 	}
 
-private:
+  private:
 	static void _get_ith_SLOW(bst_node *t, int i, T &x, int &sofar)
 	{
 		if (t == nullptr)
@@ -575,11 +623,12 @@ private:
 		_get_ith_SLOW(t->right, i, x, sofar);
 	}
 
-	static int _num_geq_SLOW(bst_node * t, const T & x)
+	static int _num_geq_SLOW(bst_node *t, const T &x)
 	{
 		int total;
 
-		if (t == nullptr) return 0;
+		if (t == nullptr)
+			return 0;
 		total = _num_geq_SLOW(t->left, x) + _num_geq_SLOW(t->right, x);
 
 		if (t->val >= x)
@@ -591,7 +640,8 @@ private:
 	{
 		int total;
 
-		if (t == nullptr) return 0;
+		if (t == nullptr)
+			return 0;
 		total = _num_leq_SLOW(t->left, x) + _num_leq_SLOW(t->right, x);
 
 		if (t->val <= x)
@@ -603,16 +653,17 @@ private:
 	{
 		int total;
 
-		if (t == nullptr) return 0;
+		if (t == nullptr)
+			return 0;
 		total = _num_range_SLOW(t->left, min, max) +
-			_num_range_SLOW(t->right, min, max);
+				_num_range_SLOW(t->right, min, max);
 
 		if (t->val >= min && t->val <= max)
 			total++;
 		return total;
 	}
 
-private:
+  private:
 	static void indent(int m)
 	{
 		int i;
@@ -622,7 +673,8 @@ private:
 
 	static void _inorder(bst_node *r)
 	{
-		if (r == nullptr) return;
+		if (r == nullptr)
+			return;
 		_inorder(r->left);
 		std::cout << "[ " << r->val << " ]\n";
 		_inorder(r->right);
@@ -665,7 +717,7 @@ private:
 		}
 	}
 
-public:
+  public:
 	void inorder()
 	{
 		std::cout << "\n======== BEGIN INORDER ============\n";
@@ -689,33 +741,36 @@ public:
 		std::cout << "\n========  END POSTORDER  ============\n";
 	}
 
-private:
+  private:
 	/*
 	* Recursive  helper function _from_vec, used by
 	* bst_from_sorted_arr(...). The function must return a sub-tree that is
 	* perfectly balanced, given a sorted array of elements a.
 	*/
-	static bst_node * _from_vec(const std::vector<T> &a, int low, int hi)
+	static bst_node *_from_vec(const std::vector<T> &a, int low, int hi)
 	{
 		int m;
 		bst_node *root;
 
-		if (hi < low) return nullptr;
+		if (hi < low)
+			return nullptr;
 		m = (low + hi) / 2;
 		root = new bst_node(a[m]);
 		root->left = _from_vec(a, low, m - 1);
 		root->right = _from_vec(a, m + 1, hi);
-		if (root->right != nullptr)	root->rcount += root->right->count;
-		if (root->left != nullptr) root->lcount += root->left->count;
+		if (root->right != nullptr)
+			root->rcount += root->right->count;
+		if (root->left != nullptr)
+			root->lcount += root->left->count;
 		root->count = 1 + root->rcount + root->lcount; //recalculate total
 		return root;
 	}
 
-public:
-	static bst * from_sorted_vec(const std::vector<T> &a, int n)
+  public:
+	static bst *from_sorted_vec(const std::vector<T> &a, int n)
 	{
 
-		bst * t = new bst();
+		bst *t = new bst();
 		t->root = _from_vec(a, 0, n - 1);
 		return t;
 	}
@@ -727,15 +782,17 @@ public:
 		return _num_leaves(root);
 	}
 
-private:
-	int _num_leaves(bst_node * r) 
+  private:
+	int _num_leaves(bst_node *r)
 	{
-		if (r == nullptr) return 0;
-		if (r->left == nullptr && r->right == nullptr) return 1;
+		if (r == nullptr)
+			return 0;
+		if (r->left == nullptr && r->right == nullptr)
+			return 1;
 		return _num_leaves(r->left) + _num_leaves(r->right);
 	}
 
-public:
+  public:
 	// TODO:  num_at_level
 	// description:  returns the number of nodes at specified level
 	//   in tree.
@@ -746,16 +803,18 @@ public:
 		return _num_at_levels(root, level);
 	}
 
-private:
-	int _num_at_levels(bst_node* r,int level)
+  private:
+	int _num_at_levels(bst_node *r, int level)
 	{
-		if (r == nullptr) return 0;
-		if (level == 0) return 1;
+		if (r == nullptr)
+			return 0;
+		if (level == 0)
+			return 1;
 		return _num_at_levels(r->left, level - 1) + _num_at_levels(r->right, level - 1);
 	}
 
 	//TODO change to private
-private:
+  private:
 	bst_node *root;
 }; // end class bst
 
